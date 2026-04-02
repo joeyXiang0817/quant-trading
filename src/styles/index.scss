@@ -1,0 +1,63 @@
+@use './variables.scss' as *;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  font-family: $font-family;
+  font-size: 14px;
+  color: $text-primary;
+  background-color: $bg-color;
+}
+
+a {
+  color: $primary-color;
+  text-decoration: none;
+}
+
+// NProgress
+#nprogress .bar {
+  background: $primary-color !important;
+}
+
+// 涨跌颜色
+.price-up {
+  color: $up-color !important;
+}
+.price-down {
+  color: $down-color !important;
+}
+.price-flat {
+  color: $info-color !important;
+}
+
+// 通用卡片
+.stat-card {
+  padding: 20px;
+  border-radius: 8px;
+  background: $card-bg;
+  border: 1px solid $border-color;
+}
+
+// 滚动条
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c0c4cc;
+  border-radius: 3px;
+}
+
+// Element Plus 覆盖
+.el-card {
+  border-radius: 8px;
+}
