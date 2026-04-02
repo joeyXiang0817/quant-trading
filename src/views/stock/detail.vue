@@ -6,11 +6,23 @@
     <!-- 指标选择 + 周期切换 -->
     <div class="toolbar">
       <IndicatorPanel :enabled="settingsStore.enabledIndicators" @toggle="settingsStore.toggleIndicator" />
-      <el-radio-group v-model="currentPeriod" size="small" @change="changePeriod">
-        <el-radio-button v-for="p in PERIODS" :key="p.value" :value="p.value">
-          {{ p.label }}
-        </el-radio-button>
-      </el-radio-group>
+      <div class="toolbar-right">
+        <el-button
+          v-if="hasBuySignal"
+          :type="isAdded ? 'success' : 'primary'"
+          size="small"
+          :disabled="isAdded"
+          @click="addToScreening"
+        >
+          <el-icon><component :is="isAdded ? Check : Plus" /></el-icon>
+          {{ isAdded ? '已加入筛选' : '加入筛选' }}
+        </el-button>
+        <el-radio-group v-model="currentPeriod" size="small" @change="changePeriod">
+          <el-radio-button v-for="p in PERIODS" :key="p.value" :value="p.value">
+            {{ p.label }}
+          </el-radio-button>
+        </el-radio-group>
+      </div>
     </div>
 
     <!-- K线图 -->
@@ -113,7 +125,10 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { Plus, Check } from '@element-plus/icons-vue'
 import { useStockStore, useSettingsStore } from '@/stores'
+import { useScreeningStore } from '@/stores/screening'
 import { PERIODS } from '@/utils/constants'
 import StockInfoCard from '@/components/StockInfoCard/index.vue'
 import IndicatorPanel from '@/components/IndicatorPanel/index.vue'
@@ -125,6 +140,7 @@ import SupportResistanceBar from '@/components/SupportResistanceBar/index.vue'
 const route = useRoute()
 const stockStore = useStockStore()
 const settingsStore = useSettingsStore()
+const screeningStore = useScreeningStore()
 
 const currentPeriod = ref(settingsStore.defaultPeriod)
 
@@ -135,6 +151,21 @@ const recentSignals = computed(() =>
 const latestClose = computed(() => {
   const data = stockStore.klineData
   return data.length ? data[data.length - 1].close : 0
+})
+
+// 是否有买点信号
+const hasBuySignal = computed(() => {
+  const sig = stockStore.compositeSignal
+  return sig && (sig.level === 'buy' || sig.level === 'strong-buy')
+})
+
+// 是否已加入今日筛选
+const isAdded = computed(() => screeningStore.isStockAdded(route.params.symbol))
+
+// 最新买入信号
+const latestBuySignal = computed(() => {
+  const buys = stockStore.signals.filter(s => s.type === 'BUY')
+  return buys.length ? buys[buys.length - 1] : null
 })
 
 function lastVal(arr) {
@@ -151,6 +182,27 @@ function fmtInd(val) {
 
 function changePeriod(val) {
   stockStore.setPeriod(val)
+}
+
+function addToScreening() {
+  const symbol = route.params.symbol
+  const info = stockStore.currentStockInfo
+  const sig = latestBuySignal.value
+
+  if (!info || !symbol) return ElMessage.warning('股票信息加载中，请稍候')
+
+  const res = screeningStore.addStock({
+    symbol,
+    code: info.code || symbol.slice(2),
+    name: info.name || symbol,
+    market: symbol.startsWith('sh') ? 'sh' : 'sz',
+    signalType: 'BUY',
+    signalSource: sig?.source || '综合',
+    signalStrength: sig?.strength || 'MEDIUM',
+    price: latestClose.value
+  })
+
+  ElMessage[res.success ? 'success' : 'warning'](res.message)
 }
 
 async function loadStock(symbol) {
@@ -191,6 +243,12 @@ onUnmounted(() => {
   padding: 12px 16px;
   border-radius: 8px;
   border: 1px solid $border-color;
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 }
 
 .chart-wrapper {

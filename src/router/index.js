@@ -34,6 +34,12 @@ const routes = [
         name: 'Settings',
         component: () => import('@/views/settings/index.vue'),
         meta: { title: '参数设置', icon: 'Setting' }
+      },
+      {
+        path: 'screening',
+        name: 'Screening',
+        component: () => import('@/views/screening/index.vue'),
+        meta: { title: '筛选记录', icon: 'Filter' }
       }
     ]
   }

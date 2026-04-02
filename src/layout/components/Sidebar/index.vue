@@ -20,6 +20,10 @@
         <el-icon><DataAnalysis /></el-icon>
         <template #title>信号回测</template>
       </el-menu-item>
+      <el-menu-item index="/screening">
+        <el-icon><Filter /></el-icon>
+        <template #title>筛选记录</template>
+      </el-menu-item>
       <el-menu-item index="/settings">
         <el-icon><Setting /></el-icon>
         <template #title>参数设置</template>
@@ -54,7 +58,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useWatchlistStore } from '@/stores'
-import { TrendCharts, DataAnalysis, Setting } from '@element-plus/icons-vue'
+import { TrendCharts, DataAnalysis, Setting, Filter } from '@element-plus/icons-vue'
 
 defineProps({ collapsed: Boolean })
 
